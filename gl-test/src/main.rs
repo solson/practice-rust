@@ -15,16 +15,32 @@ fn main() {
     let (mut window, events) = glfw.create_window(800, 600, "OpenGL", WindowMode::Windowed)
         .expect("Failed to create GLFW window.");
 
+    // Listen for keyboard events on this window.
     window.set_key_polling(true);
+
+    // Make this window's OpenGL context the current context. This must be done before calling
+    // `gl::load_with`.
     window.make_current();
 
-    // Load OpenGL function addresses.
+    // Load OpenGL function pointers.
     gl::load_with(|symbol| window.get_proc_address(symbol));
 
-    // Test calling OpenGL.
-    let mut vertex_buffer: GLuint = 0;
-    unsafe { gl::GenBuffers(1, &mut vertex_buffer); }
-    println!("{:?}", vertex_buffer);
+    static VERTICES: [GLfloat; 6] = [
+         0.0,  0.5,
+         0.5, -0.5,
+        -0.5, -0.5,
+    ];
+
+    let mut vbo = 0;
+
+    unsafe {
+        gl::GenBuffers(1, &mut vbo);
+        gl::BindBuffer(gl::ARRAY_BUFFER, vbo);
+        gl::BufferData(gl::ARRAY_BUFFER,
+                       (VERTICES.len() * std::mem::size_of::<GLfloat>()) as GLsizeiptr,
+                       &VERTICES as *const _ as *const GLvoid,
+                       gl::STATIC_DRAW);
+    }
 
     while !window.should_close() {
         glfw.poll_events();

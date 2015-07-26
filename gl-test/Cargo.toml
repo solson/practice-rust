@@ -1,0 +1,8 @@
+[package]
+name = "gl-test"
+version = "0.1.0"
+authors = ["Scott Olson <scott@solson.me>"]
+
+[dependencies]
+gl = "0.0.12"
+glfw = "0.1.0"

@@ -42,6 +42,58 @@ fn main() {
                        gl::STATIC_DRAW);
     }
 
+    const VERTEX_SHADER_SOURCE: &'static str = "
+        #version 150
+
+        in vec2 position;
+
+        void main() {
+            gl_Position = vec4(position, 0.0, 1.0);
+        }
+    ";
+
+    const FRAGMENT_SHADER_SOURCE: &'static str = "
+        #version 150
+
+        out vec4 out_color;
+
+        void main() {
+            out_color = vec4(1.0, 1.0, 1.0, 1.0);
+        }
+    ";
+
+    fn compile_shader(shader_type: GLenum, source: &str) -> Result<GLuint, String> {
+        let shader;
+        unsafe {
+            shader = gl::CreateShader(shader_type);
+            let source_ptr = source.as_bytes().as_ptr() as *const GLchar;
+            let source_len = source.len() as GLint;
+            gl::ShaderSource(shader, 1, &source_ptr, &source_len);
+            gl::CompileShader(shader);
+
+            let mut status = gl::FALSE as GLint;
+            gl::GetShaderiv(shader, gl::COMPILE_STATUS, &mut status);
+
+            if status == gl::TRUE as GLint {
+                Ok(shader)
+            } else {
+                let mut len = 0;
+                gl::GetShaderiv(shader, gl::INFO_LOG_LENGTH, &mut len);
+                if len == 0 { return Err(String::new()) }
+
+                let mut buf = Vec::with_capacity(len as usize);
+                buf.set_len(len as usize - 1); // Subtract 1 to ignore the trailing null.
+                gl::GetShaderInfoLog(shader, len, std::ptr::null_mut(),
+                                     buf.as_mut_ptr() as *mut GLchar);
+
+                Err(String::from_utf8_lossy(&buf).into_owned())
+            }
+        }
+    }
+
+    let vertex_shader = compile_shader(gl::VERTEX_SHADER, VERTEX_SHADER_SOURCE).unwrap();
+    let fragment_shader = compile_shader(gl::FRAGMENT_SHADER, FRAGMENT_SHADER_SOURCE).unwrap();
+
     while !window.should_close() {
         glfw.poll_events();
 

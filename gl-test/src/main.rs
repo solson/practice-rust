@@ -111,6 +111,7 @@ fn main() {
         gl::LinkProgram(shader_program);
         gl::UseProgram(shader_program);
 
+        // Specify the layout of the vertex data.
         let position_attrib = gl::GetAttribLocation(shader_program,
                                                     b"position\0".as_ptr() as *const GLchar);
         gl::VertexAttribPointer(position_attrib as GLuint, 2, gl::FLOAT, gl::FALSE, 0,

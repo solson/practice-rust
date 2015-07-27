@@ -67,7 +67,7 @@ fn main() {
         gl::BindBuffer(gl::ARRAY_BUFFER, vbo);
         gl::BufferData(gl::ARRAY_BUFFER,
                        (VERTICES.len() * std::mem::size_of::<GLfloat>()) as GLsizeiptr,
-                       &VERTICES as *const _ as *const GLvoid,
+                       VERTICES.as_ptr() as *const GLvoid,
                        gl::STATIC_DRAW);
     }
 

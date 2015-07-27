@@ -135,7 +135,7 @@ fn main() {
         }
 
         let time_now = time::precise_time_ns();
-        let elapsed_seconds = (time_now - time_start) as f32 / 1_000_000_000.0;
+        let elapsed_seconds = (time_now - time_start) as f32 / 1e9;
 
         unsafe {
             // Fade the triangle color between red and black.

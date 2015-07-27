@@ -1,5 +1,6 @@
 extern crate gl;
 extern crate glfw;
+extern crate time;
 
 use gl::types::*;
 use glfw::{Context, OpenGlProfileHint, WindowHint, WindowMode};
@@ -17,10 +18,12 @@ const VERTEX_SHADER_SOURCE: &'static str = "
 const FRAGMENT_SHADER_SOURCE: &'static str = "
     #version 150
 
+    uniform vec3 triangle_color;
+
     out vec4 out_color;
 
     void main() {
-        out_color = vec4(1.0, 1.0, 1.0, 1.0);
+        out_color = vec4(triangle_color, 1.0);
     }
 ";
 
@@ -76,6 +79,7 @@ fn main() {
     let shader_program;
     let mut vao;
     let mut vbo;
+    let triangle_color_uniform;
 
     unsafe {
         // Create a vertex array object.
@@ -117,7 +121,12 @@ fn main() {
         gl::VertexAttribPointer(position_attrib as GLuint, 2, gl::FLOAT, gl::FALSE, 0,
                                 std::ptr::null());
         gl::EnableVertexAttribArray(position_attrib as GLuint);
+
+        triangle_color_uniform = gl::GetUniformLocation(
+            shader_program, b"triangle_color\0".as_ptr() as *const GLchar);
     }
+
+    let time_start = time::precise_time_ns();
 
     while !window.should_close() {
         glfw.poll_events();
@@ -125,7 +134,14 @@ fn main() {
             handle_window_event(&mut window, event);
         }
 
+        let time_now = time::precise_time_ns();
+        let elapsed_seconds = (time_now - time_start) as f32 / 1_000_000_000.0;
+
         unsafe {
+            // Fade the triangle color between red and black.
+            let red = ((elapsed_seconds * 4.0).sin() + 1.0) / 2.0;
+            gl::Uniform3f(triangle_color_uniform, red, 0.0, 0.0);
+
             // Clear the screen to black.
             gl::ClearColor(0.0, 0.0, 0.0, 1.0);
             gl::Clear(gl::COLOR_BUFFER_BIT);

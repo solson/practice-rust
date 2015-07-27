@@ -4,13 +4,18 @@ extern crate time;
 
 use gl::types::*;
 use glfw::{Context, OpenGlProfileHint, WindowHint, WindowMode};
+use std::mem::size_of;
 
 const VERTEX_SHADER_SOURCE: &'static str = "
     #version 150
 
     in vec2 position;
+    in vec3 color;
+
+    out vec3 Color;
 
     void main() {
+        Color = color;
         gl_Position = vec4(position, 0.0, 1.0);
     }
 ";
@@ -18,12 +23,12 @@ const VERTEX_SHADER_SOURCE: &'static str = "
 const FRAGMENT_SHADER_SOURCE: &'static str = "
     #version 150
 
-    uniform vec3 triangle_color;
+    in vec3 Color;
 
     out vec4 out_color;
 
     void main() {
-        out_color = vec4(triangle_color, 1.0);
+        out_color = vec4(Color, 1.0);
     }
 ";
 
@@ -79,7 +84,6 @@ fn main() {
     let shader_program;
     let mut vao;
     let mut vbo;
-    let triangle_color_uniform;
 
     unsafe {
         // Create a vertex array object.
@@ -91,15 +95,25 @@ fn main() {
         vbo = 0;
         gl::GenBuffers(1, &mut vbo);
 
-        static VERTICES: [GLfloat; 6] = [
-             0.0,  0.5,
-             0.5, -0.5,
-            -0.5, -0.5,
+        #[derive(Copy, Clone, Debug, PartialEq)]
+        #[repr(C, packed)]
+        struct Vertex {
+            // Position.
+            x: GLfloat, y: GLfloat,
+
+            // Color.
+            r: GLfloat, g: GLfloat, b: GLfloat,
+        }
+
+        static VERTICES: [Vertex; 3] = [
+            Vertex { x:  0.0, y:  0.5, r: 1.0, g: 0.0, b: 0.0 },
+            Vertex { x:  0.5, y: -0.5, r: 0.0, g: 1.0, b: 0.0 },
+            Vertex { x: -0.5, y: -0.5, r: 0.0, g: 0.0, b: 1.0 },
         ];
 
         gl::BindBuffer(gl::ARRAY_BUFFER, vbo);
         gl::BufferData(gl::ARRAY_BUFFER,
-                       (VERTICES.len() * std::mem::size_of::<GLfloat>()) as GLsizeiptr,
+                       (VERTICES.len() * size_of::<Vertex>()) as GLsizeiptr,
                        VERTICES.as_ptr() as *const GLvoid,
                        gl::STATIC_DRAW);
 
@@ -116,17 +130,19 @@ fn main() {
         gl::UseProgram(shader_program);
 
         // Specify the layout of the vertex data.
-        let position_attrib = gl::GetAttribLocation(shader_program,
-                                                    b"position\0".as_ptr() as *const GLchar);
-        gl::VertexAttribPointer(position_attrib as GLuint, 2, gl::FLOAT, gl::FALSE, 0,
-                                std::ptr::null());
+        let position_attrib = gl::GetAttribLocation(
+            shader_program, b"position\0".as_ptr() as *const GLchar);
         gl::EnableVertexAttribArray(position_attrib as GLuint);
+        gl::VertexAttribPointer(position_attrib as GLuint, 2, gl::FLOAT, gl::FALSE,
+                                size_of::<Vertex>() as GLint, std::ptr::null());
 
-        triangle_color_uniform = gl::GetUniformLocation(
-            shader_program, b"triangle_color\0".as_ptr() as *const GLchar);
+        let position_attrib = gl::GetAttribLocation(
+            shader_program, b"color\0".as_ptr() as *const GLchar);
+        gl::EnableVertexAttribArray(position_attrib as GLuint);
+        gl::VertexAttribPointer(position_attrib as GLuint, 3, gl::FLOAT, gl::FALSE,
+                                size_of::<Vertex>() as GLint,
+                                std::ptr::null().offset(2 * size_of::<GLfloat>() as isize));
     }
-
-    let time_start = time::precise_time_ns();
 
     while !window.should_close() {
         glfw.poll_events();
@@ -134,14 +150,7 @@ fn main() {
             handle_window_event(&mut window, event);
         }
 
-        let time_now = time::precise_time_ns();
-        let elapsed_seconds = (time_now - time_start) as f32 / 1e9;
-
         unsafe {
-            // Fade the triangle color between red and black.
-            let red = ((elapsed_seconds * 4.0).sin() + 1.0) / 2.0;
-            gl::Uniform3f(triangle_color_uniform, red, 0.0, 0.0);
-
             // Clear the screen to black.
             gl::ClearColor(0.0, 0.0, 0.0, 1.0);
             gl::Clear(gl::COLOR_BUFFER_BIT);

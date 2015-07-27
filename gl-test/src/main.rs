@@ -5,7 +5,7 @@ use gl::types::*;
 use glfw::{Context, OpenGlProfileHint, WindowHint, WindowMode};
 
 const VERTEX_SHADER_SOURCE: &'static str = "
-    #version 150 core
+    #version 150
 
     in vec2 position;
 
@@ -15,7 +15,7 @@ const VERTEX_SHADER_SOURCE: &'static str = "
 ";
 
 const FRAGMENT_SHADER_SOURCE: &'static str = "
-    #version 150 core
+    #version 150
 
     out vec4 out_color;
 

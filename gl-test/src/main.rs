@@ -6,6 +6,10 @@ use gl::types::*;
 use glfw::{Context, OpenGlProfileHint, WindowHint, WindowMode};
 use std::mem::size_of;
 
+macro_rules! gl_str {
+    ($string_literal:expr) => (concat!($string_literal, '\0').as_bytes().as_ptr() as *const GLchar)
+}
+
 const VERTEX_SHADER_SOURCE: &'static str = "
     #version 150
 
@@ -125,19 +129,17 @@ fn main() {
         shader_program = gl::CreateProgram();
         gl::AttachShader(shader_program, vertex_shader);
         gl::AttachShader(shader_program, fragment_shader);
-        gl::BindFragDataLocation(shader_program, 0, b"out_color\0".as_ptr() as *const GLchar);
+        gl::BindFragDataLocation(shader_program, 0, gl_str!("out_color"));
         gl::LinkProgram(shader_program);
         gl::UseProgram(shader_program);
 
         // Specify the layout of the vertex data.
-        let position_attrib = gl::GetAttribLocation(
-            shader_program, b"position\0".as_ptr() as *const GLchar);
+        let position_attrib = gl::GetAttribLocation(shader_program, gl_str!("position"));
         gl::EnableVertexAttribArray(position_attrib as GLuint);
         gl::VertexAttribPointer(position_attrib as GLuint, 2, gl::FLOAT, gl::FALSE,
                                 size_of::<Vertex>() as GLint, std::ptr::null());
 
-        let position_attrib = gl::GetAttribLocation(
-            shader_program, b"color\0".as_ptr() as *const GLchar);
+        let position_attrib = gl::GetAttribLocation(shader_program, gl_str!("color"));
         gl::EnableVertexAttribArray(position_attrib as GLuint);
         gl::VertexAttribPointer(position_attrib as GLuint, 3, gl::FLOAT, gl::FALSE,
                                 size_of::<Vertex>() as GLint,

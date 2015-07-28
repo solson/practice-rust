@@ -36,6 +36,26 @@ const FRAGMENT_SHADER_SOURCE: &'static str = "
     }
 ";
 
+#[derive(Copy, Clone, Debug, PartialEq)]
+#[repr(C, packed)]
+struct Vertex {
+    // Position.
+    x: GLfloat, y: GLfloat,
+
+    // Color.
+    r: GLfloat, g: GLfloat, b: GLfloat,
+}
+
+static VERTICES: [Vertex; 6] = [
+    Vertex { x: -0.5, y:  0.5, r: 1.0, g: 0.0, b: 0.0 }, // Top-left
+    Vertex { x:  0.5, y:  0.5, r: 0.0, g: 1.0, b: 0.0 }, // Top-right
+    Vertex { x:  0.5, y: -0.5, r: 0.0, g: 0.0, b: 1.0 }, // Bottom-right
+
+    Vertex { x:  0.5, y: -0.5, r: 0.0, g: 0.0, b: 1.0 }, // Bottom-right
+    Vertex { x: -0.5, y: -0.5, r: 1.0, g: 1.0, b: 1.0 }, // Bottom-left
+    Vertex { x: -0.5, y:  0.5, r: 1.0, g: 0.0, b: 0.0 }, // Top-left
+];
+
 unsafe fn compile_shader(shader_type: GLenum, source: &str) -> Result<GLuint, String> {
     let shader = gl::CreateShader(shader_type);
     let source_ptr = source.as_bytes().as_ptr() as *const GLchar;
@@ -86,35 +106,16 @@ fn main() {
     let vertex_shader;
     let fragment_shader;
     let shader_program;
-    let mut vao;
-    let mut vbo;
+    let mut vao = 0;
+    let mut vbo = 0;
 
     unsafe {
         // Create a vertex array object.
-        vao = 0;
         gl::GenVertexArrays(1, &mut vao);
         gl::BindVertexArray(vao);
 
         // Create a vertex buffer object and copy the vertex data to it.
-        vbo = 0;
         gl::GenBuffers(1, &mut vbo);
-
-        #[derive(Copy, Clone, Debug, PartialEq)]
-        #[repr(C, packed)]
-        struct Vertex {
-            // Position.
-            x: GLfloat, y: GLfloat,
-
-            // Color.
-            r: GLfloat, g: GLfloat, b: GLfloat,
-        }
-
-        static VERTICES: [Vertex; 3] = [
-            Vertex { x:  0.0, y:  0.5, r: 1.0, g: 0.0, b: 0.0 },
-            Vertex { x:  0.5, y: -0.5, r: 0.0, g: 1.0, b: 0.0 },
-            Vertex { x: -0.5, y: -0.5, r: 0.0, g: 0.0, b: 1.0 },
-        ];
-
         gl::BindBuffer(gl::ARRAY_BUFFER, vbo);
         gl::BufferData(gl::ARRAY_BUFFER,
                        (VERTICES.len() * size_of::<Vertex>()) as GLsizeiptr,
@@ -158,7 +159,7 @@ fn main() {
             gl::Clear(gl::COLOR_BUFFER_BIT);
 
             // Draw a triangle from the 3 vertices.
-            gl::DrawArrays(gl::TRIANGLES, 0, 3);
+            gl::DrawArrays(gl::TRIANGLES, 0, VERTICES.len() as GLint);
         }
 
         window.swap_buffers();

@@ -5,6 +5,7 @@ extern crate time;
 use gl::types::*;
 use glfw::{Context, OpenGlProfileHint, WindowHint, WindowMode};
 use std::mem;
+use std::ptr;
 
 macro_rules! gl_str {
     ($string_literal:expr) => (concat!($string_literal, '\0').as_bytes().as_ptr() as *const GLchar)
@@ -77,8 +78,7 @@ unsafe fn compile_shader(shader_type: GLenum, source: &str) -> Result<GLuint, St
 
         let mut buf = Vec::with_capacity(log_len as usize);
         buf.set_len(log_len as usize - 1); // Subtract 1 to ignore the trailing null.
-        gl::GetShaderInfoLog(shader, log_len, std::ptr::null_mut(),
-        buf.as_mut_ptr() as *mut GLchar);
+        gl::GetShaderInfoLog(shader, log_len, ptr::null_mut(), buf.as_mut_ptr() as *mut GLchar);
 
         Err(String::from_utf8_lossy(&buf).into_owned())
     }
@@ -149,13 +149,13 @@ fn main() {
         let position_attrib = gl::GetAttribLocation(shader_program, gl_str!("position"));
         gl::EnableVertexAttribArray(position_attrib as GLuint);
         gl::VertexAttribPointer(position_attrib as GLuint, 2, gl::FLOAT, gl::FALSE,
-                                mem::size_of::<Vertex>() as GLint, std::ptr::null());
+                                mem::size_of::<Vertex>() as GLint, ptr::null());
 
         let position_attrib = gl::GetAttribLocation(shader_program, gl_str!("color"));
         gl::EnableVertexAttribArray(position_attrib as GLuint);
         gl::VertexAttribPointer(position_attrib as GLuint, 3, gl::FLOAT, gl::FALSE,
                                 mem::size_of::<Vertex>() as GLint,
-                                std::ptr::null().offset(2 * mem::size_of::<GLfloat>() as isize));
+                                (2 * mem::size_of::<GLfloat>()) as *const GLvoid);
     }
 
     while !window.should_close() {
@@ -171,7 +171,7 @@ fn main() {
 
             // Draw the triangles described by the elements array.
             gl::DrawElements(gl::TRIANGLES, ELEMENTS.len() as GLint, gl::UNSIGNED_INT,
-                             std::ptr::null());
+                             ptr::null());
         }
 
         window.swap_buffers();

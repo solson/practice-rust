@@ -46,14 +46,16 @@ struct Vertex {
     r: GLfloat, g: GLfloat, b: GLfloat,
 }
 
-static VERTICES: [Vertex; 6] = [
+static VERTICES: [Vertex; 4] = [
     Vertex { x: -0.5, y:  0.5, r: 1.0, g: 0.0, b: 0.0 }, // Top-left
     Vertex { x:  0.5, y:  0.5, r: 0.0, g: 1.0, b: 0.0 }, // Top-right
     Vertex { x:  0.5, y: -0.5, r: 0.0, g: 0.0, b: 1.0 }, // Bottom-right
-
-    Vertex { x:  0.5, y: -0.5, r: 0.0, g: 0.0, b: 1.0 }, // Bottom-right
     Vertex { x: -0.5, y: -0.5, r: 1.0, g: 1.0, b: 1.0 }, // Bottom-left
-    Vertex { x: -0.5, y:  0.5, r: 1.0, g: 0.0, b: 0.0 }, // Top-left
+];
+
+static ELEMENTS: [GLuint; 6] = [
+    0, 1, 2, // Top-right triangle
+    2, 3, 0, // Bottom-left triangle
 ];
 
 unsafe fn compile_shader(shader_type: GLenum, source: &str) -> Result<GLuint, String> {
@@ -108,6 +110,7 @@ fn main() {
     let shader_program;
     let mut vao = 0;
     let mut vbo = 0;
+    let mut ebo = 0;
 
     unsafe {
         // Create a vertex array object.
@@ -120,6 +123,14 @@ fn main() {
         gl::BufferData(gl::ARRAY_BUFFER,
                        mem::size_of_val(&VERTICES) as GLsizeiptr,
                        VERTICES.as_ptr() as *const GLvoid,
+                       gl::STATIC_DRAW);
+
+        // Create an element buffer object and copy the element data to it.
+        gl::GenBuffers(1, &mut ebo);
+        gl::BindBuffer(gl::ELEMENT_ARRAY_BUFFER, ebo);
+        gl::BufferData(gl::ELEMENT_ARRAY_BUFFER,
+                       mem::size_of_val(&ELEMENTS) as GLsizeiptr,
+                       ELEMENTS.as_ptr() as *const GLvoid,
                        gl::STATIC_DRAW);
 
         // Compile the vertex and fragment shaders.
@@ -138,13 +149,13 @@ fn main() {
         let position_attrib = gl::GetAttribLocation(shader_program, gl_str!("position"));
         gl::EnableVertexAttribArray(position_attrib as GLuint);
         gl::VertexAttribPointer(position_attrib as GLuint, 2, gl::FLOAT, gl::FALSE,
-                                size_of::<Vertex>() as GLint, std::ptr::null());
+                                mem::size_of::<Vertex>() as GLint, std::ptr::null());
 
         let position_attrib = gl::GetAttribLocation(shader_program, gl_str!("color"));
         gl::EnableVertexAttribArray(position_attrib as GLuint);
         gl::VertexAttribPointer(position_attrib as GLuint, 3, gl::FLOAT, gl::FALSE,
-                                size_of::<Vertex>() as GLint,
-                                std::ptr::null().offset(2 * size_of::<GLfloat>() as isize));
+                                mem::size_of::<Vertex>() as GLint,
+                                std::ptr::null().offset(2 * mem::size_of::<GLfloat>() as isize));
     }
 
     while !window.should_close() {
@@ -158,8 +169,9 @@ fn main() {
             gl::ClearColor(0.0, 0.0, 0.0, 1.0);
             gl::Clear(gl::COLOR_BUFFER_BIT);
 
-            // Draw a triangle from the 3 vertices.
-            gl::DrawArrays(gl::TRIANGLES, 0, VERTICES.len() as GLint);
+            // Draw the triangles described by the elements array.
+            gl::DrawElements(gl::TRIANGLES, ELEMENTS.len() as GLint, gl::UNSIGNED_INT,
+                             std::ptr::null());
         }
 
         window.swap_buffers();

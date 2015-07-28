@@ -4,7 +4,7 @@ extern crate time;
 
 use gl::types::*;
 use glfw::{Context, OpenGlProfileHint, WindowHint, WindowMode};
-use std::mem::size_of;
+use std::mem;
 
 macro_rules! gl_str {
     ($string_literal:expr) => (concat!($string_literal, '\0').as_bytes().as_ptr() as *const GLchar)
@@ -118,7 +118,7 @@ fn main() {
         gl::GenBuffers(1, &mut vbo);
         gl::BindBuffer(gl::ARRAY_BUFFER, vbo);
         gl::BufferData(gl::ARRAY_BUFFER,
-                       (VERTICES.len() * size_of::<Vertex>()) as GLsizeiptr,
+                       mem::size_of_val(&VERTICES) as GLsizeiptr,
                        VERTICES.as_ptr() as *const GLvoid,
                        gl::STATIC_DRAW);
 

@@ -1,6 +1,6 @@
 extern crate gl;
 extern crate glfw;
-extern crate image;
+extern crate imagefmt;
 extern crate time;
 
 use gl::types::*;
@@ -154,13 +154,11 @@ fn main() {
         gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MAG_FILTER,
                           gl::LINEAR_MIPMAP_LINEAR as GLint);
 
+        // Load a sample image into the texture.
         {
-            let image = image::open("sample.png").unwrap().to_rgb();
-            let (width, height) = image.dimensions();
-
-            gl::TexImage2D(gl::TEXTURE_2D, 0, gl::RGB as GLint, width as GLint, height as GLint, 0,
-                           gl::RGB, gl::UNSIGNED_BYTE,
-                           (&*image).as_ptr() as *const GLvoid);
+            let image = imagefmt::read("sample.png", imagefmt::ColFmt::RGB).unwrap();
+            gl::TexImage2D(gl::TEXTURE_2D, 0, gl::RGB as GLint, image.w as GLint, image.h as GLint,
+                           0, gl::RGB, gl::UNSIGNED_BYTE, image.buf.as_ptr() as *const GLvoid);
         }
 
         gl::GenerateMipmap(gl::TEXTURE_2D);

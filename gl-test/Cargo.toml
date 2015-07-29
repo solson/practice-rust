@@ -6,5 +6,5 @@ authors = ["Scott Olson <scott@solson.me>"]
 [dependencies]
 gl = "0.0.12"
 glfw = "0.1.0"
-image = "0.3.11"
+imagefmt = "1.0.0"
 time = "0.1.31"

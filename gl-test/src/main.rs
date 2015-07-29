@@ -16,11 +16,14 @@ const VERTEX_SHADER_SOURCE: &'static str = "
 
     in vec2 position;
     in vec3 color;
+    in vec2 texcoord;
 
     out vec3 Color;
+    out vec2 Texcoord;
 
     void main() {
         Color = color;
+        Texcoord = texcoord;
         gl_Position = vec4(position, 0.0, 1.0);
     }
 ";
@@ -29,11 +32,14 @@ const FRAGMENT_SHADER_SOURCE: &'static str = "
     #version 150
 
     in vec3 Color;
+    in vec2 Texcoord;
 
     out vec4 out_color;
 
+    uniform sampler2D tex;
+
     void main() {
-        out_color = vec4(Color, 1.0);
+        out_color = texture(tex, Texcoord) * vec4(Color, 1.0);
     }
 ";
 
@@ -45,13 +51,16 @@ struct Vertex {
 
     // Color.
     r: GLfloat, g: GLfloat, b: GLfloat,
+
+    // Texture.
+    s: GLfloat, t: GLfloat,
 }
 
 static VERTICES: [Vertex; 4] = [
-    Vertex { x: -0.5, y:  0.5, r: 1.0, g: 0.0, b: 0.0 }, // Top-left
-    Vertex { x:  0.5, y:  0.5, r: 0.0, g: 1.0, b: 0.0 }, // Top-right
-    Vertex { x:  0.5, y: -0.5, r: 0.0, g: 0.0, b: 1.0 }, // Bottom-right
-    Vertex { x: -0.5, y: -0.5, r: 1.0, g: 1.0, b: 1.0 }, // Bottom-left
+    Vertex { x: -0.5, y:  0.5, r: 1.0, g: 0.0, b: 0.0, s: 0.0, t: 0.0 }, // Top-left
+    Vertex { x:  0.5, y:  0.5, r: 0.0, g: 1.0, b: 0.0, s: 1.0, t: 0.0 }, // Top-right
+    Vertex { x:  0.5, y: -0.5, r: 0.0, g: 0.0, b: 1.0, s: 1.0, t: 1.0 }, // Bottom-right
+    Vertex { x: -0.5, y: -0.5, r: 1.0, g: 1.0, b: 1.0, s: 0.0, t: 1.0 }, // Bottom-left
 ];
 
 static ELEMENTS: [GLuint; 6] = [
@@ -111,6 +120,7 @@ fn main() {
     let mut vao = 0;
     let mut vbo = 0;
     let mut ebo = 0;
+    let mut tex = 0;
 
     unsafe {
         // Create a vertex array object.
@@ -132,6 +142,25 @@ fn main() {
                        mem::size_of_val(&ELEMENTS) as GLsizeiptr,
                        ELEMENTS.as_ptr() as *const GLvoid,
                        gl::STATIC_DRAW);
+
+        // Create a texture.
+        gl::GenTextures(1, &mut tex);
+        gl::BindTexture(gl::TEXTURE_2D, tex);
+        gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_WRAP_S, gl::REPEAT as GLint);
+        gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_WRAP_T, gl::REPEAT as GLint);
+        gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MIN_FILTER,
+                          gl::NEAREST as GLint);
+        gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MAG_FILTER,
+                          gl::NEAREST as GLint);
+
+        // Black/white checkerboard.
+        static PIXELS: [f32; 12] = [
+            0.0, 0.0, 0.0,  1.0, 1.0, 1.0,
+            1.0, 1.0, 1.0,  0.0, 0.0, 0.0,
+        ];
+
+        gl::TexImage2D(gl::TEXTURE_2D, 0, gl::RGB as GLint, 2, 2, 0, gl::RGB, gl::FLOAT,
+                       PIXELS.as_ptr() as *const GLvoid);
 
         // Compile the vertex and fragment shaders.
         vertex_shader = compile_shader(gl::VERTEX_SHADER, VERTEX_SHADER_SOURCE).unwrap();
@@ -156,6 +185,12 @@ fn main() {
         gl::VertexAttribPointer(position_attrib as GLuint, 3, gl::FLOAT, gl::FALSE,
                                 mem::size_of::<Vertex>() as GLint,
                                 (2 * mem::size_of::<GLfloat>()) as *const GLvoid);
+
+        let position_attrib = gl::GetAttribLocation(shader_program, gl_str!("texcoord"));
+        gl::EnableVertexAttribArray(position_attrib as GLuint);
+        gl::VertexAttribPointer(position_attrib as GLuint, 2, gl::FLOAT, gl::FALSE,
+                                mem::size_of::<Vertex>() as GLint,
+                                (5 * mem::size_of::<GLfloat>()) as *const GLvoid);
     }
 
     while !window.should_close() {

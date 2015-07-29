@@ -1,5 +1,6 @@
 extern crate gl;
 extern crate glfw;
+extern crate image;
 extern crate time;
 
 use gl::types::*;
@@ -149,18 +150,20 @@ fn main() {
         gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_WRAP_S, gl::REPEAT as GLint);
         gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_WRAP_T, gl::REPEAT as GLint);
         gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MIN_FILTER,
-                          gl::NEAREST as GLint);
+                          gl::LINEAR_MIPMAP_LINEAR as GLint);
         gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MAG_FILTER,
-                          gl::NEAREST as GLint);
+                          gl::LINEAR_MIPMAP_LINEAR as GLint);
 
-        // Black/white checkerboard.
-        static PIXELS: [f32; 12] = [
-            0.0, 0.0, 0.0,  1.0, 1.0, 1.0,
-            1.0, 1.0, 1.0,  0.0, 0.0, 0.0,
-        ];
+        {
+            let image = image::open("sample.png").unwrap().to_rgb();
+            let (width, height) = image.dimensions();
 
-        gl::TexImage2D(gl::TEXTURE_2D, 0, gl::RGB as GLint, 2, 2, 0, gl::RGB, gl::FLOAT,
-                       PIXELS.as_ptr() as *const GLvoid);
+            gl::TexImage2D(gl::TEXTURE_2D, 0, gl::RGB as GLint, width as GLint, height as GLint, 0,
+                           gl::RGB, gl::UNSIGNED_BYTE,
+                           (&*image).as_ptr() as *const GLvoid);
+        }
+
+        gl::GenerateMipmap(gl::TEXTURE_2D);
 
         // Compile the vertex and fragment shaders.
         vertex_shader = compile_shader(gl::VERTEX_SHADER, VERTEX_SHADER_SOURCE).unwrap();

@@ -39,11 +39,13 @@ const FRAGMENT_SHADER_SOURCE: &'static str = "
 
     uniform sampler2D texKitten;
     uniform sampler2D texPuppy;
+    uniform float time;
 
     void main() {
+        float mix_factor = (sin(time * 3.0) + 1.0) / 2.0;
         vec4 colKitten = texture(texKitten, Texcoord);
         vec4 colPuppy = texture(texPuppy, Texcoord);
-        out_color = mix(colKitten, colPuppy, 0.5);
+        out_color = mix(colKitten, colPuppy, mix_factor);
     }
 ";
 
@@ -211,6 +213,9 @@ fn main() {
                           gl::LINEAR_MIPMAP_LINEAR as GLint);
     }
 
+    let time_uniform = unsafe { gl::GetUniformLocation(shader_program, gl_str!("time")) };
+    let time_start = time::precise_time_ns();
+
     while !window.should_close() {
         glfw.poll_events();
         for (_, event) in glfw::flush_messages(&events) {
@@ -218,6 +223,11 @@ fn main() {
         }
 
         unsafe {
+            // Update the `time` uniform.
+            let time_now = time::precise_time_ns();
+            let elapsed_seconds = (time_now - time_start) as f32 / 1e9;
+            gl::Uniform1f(time_uniform, elapsed_seconds);
+
             // Clear the screen to black.
             gl::ClearColor(0.0, 0.0, 0.0, 1.0);
             gl::Clear(gl::COLOR_BUFFER_BIT);

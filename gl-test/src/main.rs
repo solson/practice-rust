@@ -37,10 +37,13 @@ const FRAGMENT_SHADER_SOURCE: &'static str = "
 
     out vec4 out_color;
 
-    uniform sampler2D tex;
+    uniform sampler2D texKitten;
+    uniform sampler2D texPuppy;
 
     void main() {
-        out_color = texture(tex, Texcoord) * vec4(Color, 1.0);
+        vec4 colKitten = texture(texKitten, Texcoord);
+        vec4 colPuppy = texture(texPuppy, Texcoord);
+        out_color = mix(colKitten, colPuppy, 0.5);
     }
 ";
 
@@ -121,7 +124,7 @@ fn main() {
     let mut vao = 0;
     let mut vbo = 0;
     let mut ebo = 0;
-    let mut tex = 0;
+    let mut textures = [0; 2];
 
     unsafe {
         // Create a vertex array object.
@@ -143,25 +146,6 @@ fn main() {
                        mem::size_of_val(&ELEMENTS) as GLsizeiptr,
                        ELEMENTS.as_ptr() as *const GLvoid,
                        gl::STATIC_DRAW);
-
-        // Create a texture.
-        gl::GenTextures(1, &mut tex);
-        gl::BindTexture(gl::TEXTURE_2D, tex);
-        gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_WRAP_S, gl::REPEAT as GLint);
-        gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_WRAP_T, gl::REPEAT as GLint);
-        gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MIN_FILTER,
-                          gl::LINEAR_MIPMAP_LINEAR as GLint);
-        gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MAG_FILTER,
-                          gl::LINEAR_MIPMAP_LINEAR as GLint);
-
-        // Load a sample image into the texture.
-        {
-            let image = imagefmt::read("sample.png", imagefmt::ColFmt::RGB).unwrap();
-            gl::TexImage2D(gl::TEXTURE_2D, 0, gl::RGB as GLint, image.w as GLint, image.h as GLint,
-                           0, gl::RGB, gl::UNSIGNED_BYTE, image.buf.as_ptr() as *const GLvoid);
-        }
-
-        gl::GenerateMipmap(gl::TEXTURE_2D);
 
         // Compile the vertex and fragment shaders.
         vertex_shader = compile_shader(gl::VERTEX_SHADER, VERTEX_SHADER_SOURCE).unwrap();
@@ -192,6 +176,39 @@ fn main() {
         gl::VertexAttribPointer(position_attrib as GLuint, 2, gl::FLOAT, gl::FALSE,
                                 mem::size_of::<Vertex>() as GLint,
                                 (5 * mem::size_of::<GLfloat>()) as *const GLvoid);
+
+        // Create and load textures.
+        gl::GenTextures(2, textures.as_mut_ptr());
+
+        gl::ActiveTexture(gl::TEXTURE0);
+        gl::BindTexture(gl::TEXTURE_2D, textures[0]);
+        let image = imagefmt::read("sample.png", imagefmt::ColFmt::RGB).unwrap();
+        gl::TexImage2D(gl::TEXTURE_2D, 0, gl::RGB as GLint, image.w as GLint, image.h as GLint,
+                       0, gl::RGB, gl::UNSIGNED_BYTE, image.buf.as_ptr() as *const GLvoid);
+        gl::Uniform1i(gl::GetUniformLocation(shader_program, gl_str!("texKitten")), 0);
+
+        gl::GenerateMipmap(gl::TEXTURE_2D);
+        gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_WRAP_S, gl::REPEAT as GLint);
+        gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_WRAP_T, gl::REPEAT as GLint);
+        gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MIN_FILTER,
+                          gl::LINEAR_MIPMAP_LINEAR as GLint);
+        gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MAG_FILTER,
+                          gl::LINEAR_MIPMAP_LINEAR as GLint);
+
+        gl::ActiveTexture(gl::TEXTURE1);
+        gl::BindTexture(gl::TEXTURE_2D, textures[1]);
+        let image = imagefmt::read("sample2.png", imagefmt::ColFmt::RGB).unwrap();
+        gl::TexImage2D(gl::TEXTURE_2D, 0, gl::RGB as GLint, image.w as GLint, image.h as GLint,
+                       0, gl::RGB, gl::UNSIGNED_BYTE, image.buf.as_ptr() as *const GLvoid);
+        gl::Uniform1i(gl::GetUniformLocation(shader_program, gl_str!("texPuppy")), 1);
+
+        gl::GenerateMipmap(gl::TEXTURE_2D);
+        gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_WRAP_S, gl::REPEAT as GLint);
+        gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_WRAP_T, gl::REPEAT as GLint);
+        gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MIN_FILTER,
+                          gl::LINEAR_MIPMAP_LINEAR as GLint);
+        gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MAG_FILTER,
+                          gl::LINEAR_MIPMAP_LINEAR as GLint);
     }
 
     while !window.should_close() {
@@ -214,9 +231,11 @@ fn main() {
     }
 
     unsafe {
+        gl::DeleteTextures(2, textures.as_ptr());
         gl::DeleteProgram(shader_program);
         gl::DeleteShader(fragment_shader);
         gl::DeleteShader(vertex_shader);
+        gl::DeleteBuffers(1, &ebo);
         gl::DeleteBuffers(1, &vbo);
         gl::DeleteVertexArrays(1, &vao);
     }

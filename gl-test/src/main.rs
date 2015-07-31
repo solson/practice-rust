@@ -9,83 +9,71 @@ use std::mem;
 use std::ptr;
 
 #[derive(Copy, Clone, Debug, PartialEq)]
-struct Vec4 {
-    data: [GLfloat; 4]
-}
+struct Vec4([GLfloat; 4]);
 
 impl Vec4 {
     fn zero() -> Self {
-        Vec4 { data: [0.0, 0.0, 0.0, 0.0] }
+        Vec4([0.0, 0.0, 0.0, 0.0])
     }
 
-    fn x(&self) -> GLfloat { self.data[0] }
-    fn y(&self) -> GLfloat { self.data[1] }
-    fn z(&self) -> GLfloat { self.data[2] }
-    fn w(&self) -> GLfloat { self.data[3] }
+    fn x(&self) -> GLfloat { self[0] }
+    fn y(&self) -> GLfloat { self[1] }
+    fn z(&self) -> GLfloat { self[2] }
+    fn w(&self) -> GLfloat { self[3] }
 }
 
 impl std::ops::Index<usize> for Vec4 {
     type Output = GLfloat;
 
     fn index(&self, i: usize) -> &GLfloat {
-        &self.data[i]
+        &self.0[i]
     }
 }
 
 impl std::ops::IndexMut<usize> for Vec4 {
     fn index_mut(&mut self, i: usize) -> &mut GLfloat {
-        &mut self.data[i]
+        &mut self.0[i]
     }
 }
 
 #[derive(Copy, Clone, Debug, PartialEq)]
-struct Mat4 {
-    data: [[GLfloat; 4]; 4]
-}
+struct Mat4([[GLfloat; 4]; 4]);
 
 impl Mat4 {
     fn zero() -> Self {
-        Mat4 {
-            data: [
-                [0.0, 0.0, 0.0, 0.0],
-                [0.0, 0.0, 0.0, 0.0],
-                [0.0, 0.0, 0.0, 0.0],
-                [0.0, 0.0, 0.0, 0.0],
-            ]
-        }
+        Mat4([
+            [0.0, 0.0, 0.0, 0.0],
+            [0.0, 0.0, 0.0, 0.0],
+            [0.0, 0.0, 0.0, 0.0],
+            [0.0, 0.0, 0.0, 0.0],
+        ])
     }
 
     fn identity() -> Self {
-        Mat4 {
-            data: [
-                [1.0, 0.0, 0.0, 0.0],
-                [0.0, 1.0, 0.0, 0.0],
-                [0.0, 0.0, 1.0, 0.0],
-                [0.0, 0.0, 0.0, 1.0],
-            ]
-        }
+        Mat4([
+            [1.0, 0.0, 0.0, 0.0],
+            [0.0, 1.0, 0.0, 0.0],
+            [0.0, 0.0, 1.0, 0.0],
+            [0.0, 0.0, 0.0, 1.0],
+        ])
     }
 
     fn scale(x: GLfloat, y: GLfloat, z: GLfloat) -> Self {
-        Mat4 {
-            data: [
-                [x,   0.0, 0.0, 0.0],
-                [0.0, y,   0.0, 0.0],
-                [0.0, 0.0, z,   0.0],
-                [0.0, 0.0, 0.0, 1.0],
-            ]
-        }
+        Mat4([
+            [x,   0.0, 0.0, 0.0],
+            [0.0, y,   0.0, 0.0],
+            [0.0, 0.0, z,   0.0],
+            [0.0, 0.0, 0.0, 1.0],
+        ])
     }
 
     fn translate(x: GLfloat, y: GLfloat, z: GLfloat) -> Self {
-        Mat4 {
-            data: [
-                [1.0, 0.0, 0.0, x  ],
-                [0.0, 1.0, 0.0, y  ],
-                [0.0, 0.0, 1.0, z  ],
-                [0.0, 0.0, 0.0, 1.0],
-            ]
-        }
+        Mat4([
+            [1.0, 0.0, 0.0, x  ],
+            [0.0, 1.0, 0.0, y  ],
+            [0.0, 0.0, 1.0, z  ],
+            [0.0, 0.0, 0.0, 1.0],
+        ])
     }
 
     /// A matrix representing a rotation around the X-axis by the given angle (in radians).
@@ -93,14 +81,12 @@ impl Mat4 {
         let cos = angle.cos();
         let sin = angle.sin();
 
-        Mat4 {
-            data: [
-                [1.0, 0.0,  0.0, 0.0],
-                [0.0, cos, -sin, 0.0],
-                [0.0, sin,  cos, 0.0],
-                [0.0, 0.0,  0.0, 1.0],
-            ]
-        }
+        Mat4([
+            [1.0, 0.0,  0.0, 0.0],
+            [0.0, cos, -sin, 0.0],
+            [0.0, sin,  cos, 0.0],
+            [0.0, 0.0,  0.0, 1.0],
+        ])
     }
 
     /// A matrix representing a rotation around the Y-axis by the given angle (in radians).
@@ -108,14 +94,12 @@ impl Mat4 {
         let cos = angle.cos();
         let sin = angle.sin();
 
-        Mat4 {
-            data: [
-                [ cos, 0.0, sin, 0.0],
-                [ 0.0, 1.0, 0.0, 0.0],
-                [-sin, 0.0, cos, 0.0],
-                [ 0.0, 0.0, 0.0, 1.0],
-            ]
-        }
+        Mat4([
+            [ cos, 0.0, sin, 0.0],
+            [ 0.0, 1.0, 0.0, 0.0],
+            [-sin, 0.0, cos, 0.0],
+            [ 0.0, 0.0, 0.0, 1.0],
+        ])
     }
 
     /// A matrix representing a rotation around the Z-axis by the given angle (in radians).
@@ -123,14 +107,12 @@ impl Mat4 {
         let cos = angle.cos();
         let sin = angle.sin();
 
-        Mat4 {
-            data: [
-                [cos, -sin, 0.0, 0.0],
-                [sin,  cos, 0.0, 0.0],
-                [0.0,  0.0, 1.0, 0.0],
-                [0.0,  0.0, 0.0, 1.0],
-            ]
-        }
+        Mat4([
+            [cos, -sin, 0.0, 0.0],
+            [sin,  cos, 0.0, 0.0],
+            [0.0,  0.0, 1.0, 0.0],
+            [0.0,  0.0, 0.0, 1.0],
+        ])
     }
 }
 
@@ -138,13 +120,13 @@ impl std::ops::Index<usize> for Mat4 {
     type Output = [GLfloat; 4];
 
     fn index(&self, i: usize) -> &[GLfloat; 4] {
-        &self.data[i]
+        &self.0[i]
     }
 }
 
 impl std::ops::IndexMut<usize> for Mat4 {
     fn index_mut(&mut self, i: usize) -> &mut [GLfloat; 4] {
-        &mut self.data[i]
+        &mut self.0[i]
     }
 }
 
@@ -188,10 +170,9 @@ fn test_math() {
     let trans = Mat4::translate(1.0, 2.0, 3.0);
     let combined = trans * scale;
 
-    let orig = Vec4 { data: [3.0, 3.0, 3.0, 1.0] };
-    let expected = Vec4 { data: [7.0, 8.0, 9.0, 1.0] };
+    let orig = Vec4([3.0, 3.0, 3.0, 1.0]);
+    let expected = Vec4([7.0, 8.0, 9.0, 1.0]);
 
-    println!("{:?}", combined);
     assert_eq!(expected, combined * orig);
 }
 

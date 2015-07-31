@@ -215,7 +215,8 @@ const FRAGMENT_SHADER_SOURCE: &'static str = "
         float mix_factor = (sin(time * 3.0) + 1.0) / 2.0;
         vec4 colKitten = texture(texKitten, Texcoord);
         vec4 colPuppy = texture(texPuppy, Texcoord);
-        out_color = mix(colKitten, colPuppy, mix_factor);
+        vec4 mixedTexture = mix(colKitten, colPuppy, mix_factor);
+        out_color = mix(vec4(Color, 1.0), mixedTexture, 0.25);
     }
 ";
 

@@ -207,16 +207,16 @@ const FRAGMENT_SHADER_SOURCE: &'static str = "
 
     out vec4 out_color;
 
-    uniform sampler2D texKitten;
-    uniform sampler2D texPuppy;
+    uniform sampler2D tex_kitten;
+    uniform sampler2D tex_puppy;
     uniform float time;
 
     void main() {
         float mix_factor = (sin(time * 3.0) + 1.0) / 2.0;
-        vec4 colKitten = texture(texKitten, Texcoord);
-        vec4 colPuppy = texture(texPuppy, Texcoord);
-        vec4 mixedTexture = mix(colKitten, colPuppy, mix_factor);
-        out_color = mix(vec4(Color, 1.0), mixedTexture, 0.25);
+        vec4 col_kitten = texture(tex_kitten, Texcoord);
+        vec4 col_puppy = texture(tex_puppy, Texcoord);
+        vec4 mixed_texture = mix(col_kitten, col_puppy, mix_factor);
+        out_color = mix(vec4(Color, 1.0), mixed_texture, 0.25);
     }
 ";
 
@@ -358,7 +358,7 @@ fn main() {
         let image = imagefmt::read("sample.png", imagefmt::ColFmt::RGB).unwrap();
         gl::TexImage2D(gl::TEXTURE_2D, 0, gl::RGB as GLint, image.w as GLint, image.h as GLint,
                        0, gl::RGB, gl::UNSIGNED_BYTE, image.buf.as_ptr() as *const GLvoid);
-        gl::Uniform1i(gl::GetUniformLocation(shader_program, gl_str!("texKitten")), 0);
+        gl::Uniform1i(gl::GetUniformLocation(shader_program, gl_str!("tex_kitten")), 0);
 
         gl::GenerateMipmap(gl::TEXTURE_2D);
         gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_WRAP_S, gl::REPEAT as GLint);
@@ -373,7 +373,7 @@ fn main() {
         let image = imagefmt::read("sample2.png", imagefmt::ColFmt::RGB).unwrap();
         gl::TexImage2D(gl::TEXTURE_2D, 0, gl::RGB as GLint, image.w as GLint, image.h as GLint,
                        0, gl::RGB, gl::UNSIGNED_BYTE, image.buf.as_ptr() as *const GLvoid);
-        gl::Uniform1i(gl::GetUniformLocation(shader_program, gl_str!("texPuppy")), 1);
+        gl::Uniform1i(gl::GetUniformLocation(shader_program, gl_str!("tex_puppy")), 1);
 
         gl::GenerateMipmap(gl::TEXTURE_2D);
         gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_WRAP_S, gl::REPEAT as GLint);

@@ -170,10 +170,10 @@ fn test_math() {
     let trans = Mat4::translate(1.0, 2.0, 3.0);
     let combined = trans * scale;
 
-    let orig = Vec4([3.0, 3.0, 3.0, 1.0]);
+    let original = Vec4([3.0, 3.0, 3.0, 1.0]);
     let expected = Vec4([7.0, 8.0, 9.0, 1.0]);
 
-    assert_eq!(expected, combined * orig);
+    assert_eq!(expected, combined * original);
 }
 
 macro_rules! gl_str {

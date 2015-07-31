@@ -177,7 +177,9 @@ fn test_math() {
 }
 
 macro_rules! gl_str {
-    ($string_literal:expr) => (concat!($string_literal, '\0').as_bytes().as_ptr() as *const GLchar)
+    ($string_literal:expr) => (
+        concat!($string_literal, '\0').as_bytes().as_ptr() as *const GLchar
+    )
 }
 
 const VERTEX_SHADER_SOURCE: &'static str = "

@@ -9,17 +9,17 @@ use std::mem;
 use std::ptr;
 
 #[derive(Copy, Clone, Debug, PartialEq)]
-struct Vec4([GLfloat; 4]);
+pub struct Vec4(pub [GLfloat; 4]);
 
 impl Vec4 {
-    fn zero() -> Self {
+    pub fn zero() -> Self {
         Vec4([0.0, 0.0, 0.0, 0.0])
     }
 
-    fn x(&self) -> GLfloat { self[0] }
-    fn y(&self) -> GLfloat { self[1] }
-    fn z(&self) -> GLfloat { self[2] }
-    fn w(&self) -> GLfloat { self[3] }
+    pub fn x(&self) -> GLfloat { self[0] }
+    pub fn y(&self) -> GLfloat { self[1] }
+    pub fn z(&self) -> GLfloat { self[2] }
+    pub fn w(&self) -> GLfloat { self[3] }
 }
 
 impl std::ops::Index<usize> for Vec4 {
@@ -37,10 +37,10 @@ impl std::ops::IndexMut<usize> for Vec4 {
 }
 
 #[derive(Copy, Clone, Debug, PartialEq)]
-struct Mat4([[GLfloat; 4]; 4]);
+pub struct Mat4(pub [[GLfloat; 4]; 4]);
 
 impl Mat4 {
-    fn zero() -> Self {
+    pub fn zero() -> Self {
         Mat4([
             [0.0, 0.0, 0.0, 0.0],
             [0.0, 0.0, 0.0, 0.0],
@@ -49,7 +49,7 @@ impl Mat4 {
         ])
     }
 
-    fn identity() -> Self {
+    pub fn identity() -> Self {
         Mat4([
             [1.0, 0.0, 0.0, 0.0],
             [0.0, 1.0, 0.0, 0.0],
@@ -58,7 +58,7 @@ impl Mat4 {
         ])
     }
 
-    fn scale(x: GLfloat, y: GLfloat, z: GLfloat) -> Self {
+    pub fn scale(x: GLfloat, y: GLfloat, z: GLfloat) -> Self {
         Mat4([
             [x,   0.0, 0.0, 0.0],
             [0.0, y,   0.0, 0.0],
@@ -67,7 +67,7 @@ impl Mat4 {
         ])
     }
 
-    fn translate(x: GLfloat, y: GLfloat, z: GLfloat) -> Self {
+    pub fn translate(x: GLfloat, y: GLfloat, z: GLfloat) -> Self {
         Mat4([
             [1.0, 0.0, 0.0, x  ],
             [0.0, 1.0, 0.0, y  ],
@@ -77,7 +77,7 @@ impl Mat4 {
     }
 
     /// A matrix representing a rotation around the X-axis by the given angle (in radians).
-    fn rotate_x(angle: GLfloat) -> Self {
+    pub fn rotate_x(angle: GLfloat) -> Self {
         let cos = angle.cos();
         let sin = angle.sin();
 
@@ -90,7 +90,7 @@ impl Mat4 {
     }
 
     /// A matrix representing a rotation around the Y-axis by the given angle (in radians).
-    fn rotate_y(angle: GLfloat) -> Self {
+    pub fn rotate_y(angle: GLfloat) -> Self {
         let cos = angle.cos();
         let sin = angle.sin();
 
@@ -103,7 +103,7 @@ impl Mat4 {
     }
 
     /// A matrix representing a rotation around the Z-axis by the given angle (in radians).
-    fn rotate_z(angle: GLfloat) -> Self {
+    pub fn rotate_z(angle: GLfloat) -> Self {
         let cos = angle.cos();
         let sin = angle.sin();
 

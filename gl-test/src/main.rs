@@ -20,6 +20,31 @@ impl Vec4 {
     pub fn y(&self) -> GLfloat { self[1] }
     pub fn z(&self) -> GLfloat { self[2] }
     pub fn w(&self) -> GLfloat { self[3] }
+
+    /// Calculate the square of the length (or norm) of the vector. Slightly faster than `length`.
+    pub fn length_squared(&self) -> GLfloat {
+        let mut sum = 0.0;
+
+        for i in 0..4 {
+            sum += self[i] * self[i];
+        }
+
+        sum
+    }
+
+    /// Calculate the the length (or norm) of the vector.
+    pub fn length(&self) -> GLfloat {
+        self.length_squared().sqrt()
+    }
+
+    /// Normalize the vector so that it has the same orientation but a length of 1.
+    pub fn normalize(&mut self) {
+        let length = self.length();
+
+        for i in 0..4 {
+            self[i] /= length;
+        }
+    }
 }
 
 impl std::ops::Index<usize> for Vec4 {

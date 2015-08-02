@@ -411,13 +411,9 @@ fn main() {
                           gl::LINEAR_MIPMAP_LINEAR as GLint);
         gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MAG_FILTER,
                           gl::LINEAR_MIPMAP_LINEAR as GLint);
-
-        // Make a rotation matrix for a half-rotation around the Z-axis and pass it to the GPU.
-        let trans = Mat4::rotate_z(TAU / 2.0);
-        let trans_uniform = gl::GetUniformLocation(shader_program, gl_str!("trans"));
-        gl::UniformMatrix4fv(trans_uniform, 1, gl::FALSE, &trans[0][0]);
     }
 
+    let trans_uniform = unsafe { gl::GetUniformLocation(shader_program, gl_str!("trans")) };
     let time_uniform = unsafe { gl::GetUniformLocation(shader_program, gl_str!("time")) };
     let time_start = time::precise_time_ns();
 
@@ -432,6 +428,10 @@ fn main() {
             let time_now = time::precise_time_ns();
             let elapsed_seconds = (time_now - time_start) as f32 / 1e9;
             gl::Uniform1f(time_uniform, elapsed_seconds);
+
+            // Vary the rotation matrix over time.
+            let trans = Mat4::rotate_z(TAU / 2.0 * elapsed_seconds);
+            gl::UniformMatrix4fv(trans_uniform, 1, gl::FALSE, &trans[0][0]);
 
             // Clear the screen to black.
             gl::ClearColor(0.0, 0.0, 0.0, 1.0);

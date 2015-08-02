@@ -1,6 +1,6 @@
 use gl::types::*;
 use std::f32::consts::PI;
-use std::ops::{Index, IndexMut, Mul};
+use std::ops::{Add, Index, IndexMut, Mul, Sub};
 
 pub const TAU: GLfloat = 2.0 * PI;
 
@@ -52,6 +52,34 @@ macro_rules! define_vec {
         impl IndexMut<usize> for $name {
             fn index_mut(&mut self, i: usize) -> &mut GLfloat {
                 &mut self.0[i]
+            }
+        }
+
+        impl Add for $name {
+            type Output = Self;
+
+            fn add(self, other: Self) -> Self {
+                let mut result = $name::zero();
+
+                for i in 0..$size {
+                    result[i] = self[i] + other[i];
+                }
+
+                result
+            }
+        }
+
+        impl Sub for $name {
+            type Output = Self;
+
+            fn sub(self, other: Self) -> Self {
+                let mut result = $name::zero();
+
+                for i in 0..$size {
+                    result[i] = self[i] - other[i];
+                }
+
+                result
             }
         }
     );

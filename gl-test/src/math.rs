@@ -64,6 +64,7 @@ define_vec!(Vec4, 4);
 pub struct Mat4(pub [[GLfloat; 4]; 4]);
 
 impl Mat4 {
+    /// The zero matrix.
     pub fn zero() -> Self {
         Mat4([
             [0.0, 0.0, 0.0, 0.0],
@@ -73,6 +74,7 @@ impl Mat4 {
         ])
     }
 
+    /// The identity matrix.
     pub fn identity() -> Self {
         Mat4([
             [1.0, 0.0, 0.0, 0.0],
@@ -82,6 +84,7 @@ impl Mat4 {
         ])
     }
 
+    /// Build a matrix representing a scaling by the given factors.
     pub fn scale(x: GLfloat, y: GLfloat, z: GLfloat) -> Self {
         Mat4([
             [x,   0.0, 0.0, 0.0],
@@ -91,6 +94,7 @@ impl Mat4 {
         ])
     }
 
+    /// Build a matrix representing a translation.
     pub fn translate(x: GLfloat, y: GLfloat, z: GLfloat) -> Self {
         Mat4([
             [1.0, 0.0, 0.0, x  ],
@@ -100,7 +104,7 @@ impl Mat4 {
         ])
     }
 
-    /// A matrix representing a rotation around the X-axis by the given angle (in radians).
+    /// Build a matrix representing a rotation around the X-axis by the given angle (in radians).
     pub fn rotate_x(angle: GLfloat) -> Self {
         let cos = angle.cos();
         let sin = angle.sin();
@@ -113,7 +117,7 @@ impl Mat4 {
         ])
     }
 
-    /// A matrix representing a rotation around the Y-axis by the given angle (in radians).
+    /// Build a matrix representing a rotation around the Y-axis by the given angle (in radians).
     pub fn rotate_y(angle: GLfloat) -> Self {
         let cos = angle.cos();
         let sin = angle.sin();
@@ -126,7 +130,7 @@ impl Mat4 {
         ])
     }
 
-    /// A matrix representing a rotation around the Z-axis by the given angle (in radians).
+    /// Build a matrix representing a rotation around the Z-axis by the given angle (in radians).
     pub fn rotate_z(angle: GLfloat) -> Self {
         let cos = angle.cos();
         let sin = angle.sin();

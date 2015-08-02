@@ -217,6 +217,24 @@ impl Mat4 {
             [-x.dot(eye), -y.dot(eye), -z.dot(eye), 1.0],
         ])
     }
+
+    /// Build a perspective projection matrix with the given vertical field of view (in radians),
+    /// aspect ratio, and Z-axis clipping distances.
+    pub fn perspective(fov_y: GLfloat, aspect: GLfloat, z_near: GLfloat, z_far: GLfloat) -> Self {
+        assert!(aspect != 0.0);
+        assert!(z_near != z_far);
+
+        let f = 1.0 / (fov_y / 2.0).tan();
+        let z_diff = z_near - z_far;
+
+        let mut result = Mat4::zero();
+        result[0][0] = f / aspect;
+        result[1][1] = f;
+        result[2][2] = (z_near + z_far) / z_diff;
+        result[2][3] = -1.0;
+        result[3][2] = (2.0 * z_near * z_far) / z_diff;
+        result
+    }
 }
 
 impl Index<usize> for Mat4 {

@@ -220,6 +220,10 @@ fn main() {
                           gl::LINEAR_MIPMAP_LINEAR as GLint);
     }
 
+    let view = math::Mat4::look_at(
+        math::Vec3([1.2, 1.2, 1.2]),
+        math::Vec3([0.0, 0.0, 0.0]),
+        math::Vec3([0.0, 0.0, 1.0]));
     let trans_uniform = unsafe { gl::GetUniformLocation(shader_program, gl_str!("trans")) };
     let time_uniform = unsafe { gl::GetUniformLocation(shader_program, gl_str!("time")) };
     let time_start = time::precise_time_ns();
@@ -237,7 +241,8 @@ fn main() {
             gl::Uniform1f(time_uniform, elapsed_seconds);
 
             // Vary the rotation matrix over time.
-            let trans = math::Mat4::rotate_z(math::TAU / 2.0 * elapsed_seconds);
+            let model = math::Mat4::rotate_z(math::TAU / 2.0 * elapsed_seconds);
+            let trans = view * model;
             gl::UniformMatrix4fv(trans_uniform, 1, gl::FALSE, &trans[0][0]);
 
             // Clear the screen to black.

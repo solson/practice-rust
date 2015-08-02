@@ -186,6 +186,25 @@ impl Mat4 {
             [0.0,  0.0, 0.0, 1.0],
         ])
     }
+
+    /// Build a camera view matrix with the camera at `eye` looking toward `center` with `up` as
+    /// the vertical direction.
+    pub fn look_at(eye: Vec3, center: Vec3, up: Vec3) -> Self {
+        let mut z = eye - center;
+        z.normalize();
+        let mut y = up;
+        let mut x = y.cross(z);
+        y = z.cross(x);
+        x.normalize();
+        y.normalize();
+
+        Mat4([
+            [x[0], x[1], x[2], -x.dot(eye)],
+            [y[0], y[1], y[2], -y.dot(eye)],
+            [z[0], z[1], z[2], -z.dot(eye)],
+            [0.0,  0.0,  0.0,   1.0       ],
+        ])
+    }
 }
 
 impl Index<usize> for Mat4 {

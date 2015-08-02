@@ -252,8 +252,11 @@ fn main() {
             let elapsed_seconds = (time_now - time_start) as f32 / 1e9;
             gl::Uniform1f(time_uniform, elapsed_seconds);
 
-            // Vary the rotation matrix over time.
-            let model = math::Mat4::rotate_z(math::TAU / 2.0 * elapsed_seconds);
+            // Vary the model matrix over time.
+            let scale = (elapsed_seconds * 5.0).sin() * 0.25 + 0.75;
+            let model =
+                math::Mat4::rotate_z(math::TAU / 2.0 * elapsed_seconds) *
+                math::Mat4::scale(scale, scale, scale);
             gl::UniformMatrix4fv(model_uniform, 1, gl::FALSE, &model[0][0]);
 
             // Clear the screen to black.

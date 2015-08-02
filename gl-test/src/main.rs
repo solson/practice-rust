@@ -8,6 +8,8 @@ use glfw::{Context, OpenGlProfileHint, WindowHint, WindowMode};
 use std::mem;
 use std::ptr;
 
+const TAU: GLfloat = 2.0 * std::f32::consts::PI;
+
 #[derive(Copy, Clone, Debug, PartialEq)]
 pub struct Vec4(pub [GLfloat; 4]);
 
@@ -217,10 +219,12 @@ const VERTEX_SHADER_SOURCE: &'static str = "
     out vec3 Color;
     out vec2 Texcoord;
 
+    uniform mat4 trans;
+
     void main() {
         Color = color;
         Texcoord = texcoord;
-        gl_Position = vec4(position, 0.0, 1.0);
+        gl_Position = trans * vec4(position, 0.0, 1.0);
     }
 ";
 
@@ -407,6 +411,11 @@ fn main() {
                           gl::LINEAR_MIPMAP_LINEAR as GLint);
         gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MAG_FILTER,
                           gl::LINEAR_MIPMAP_LINEAR as GLint);
+
+        // Make a rotation matrix for a half-rotation around the Z-axis and pass it to the GPU.
+        let trans = Mat4::rotate_z(TAU / 2.0);
+        let trans_uniform = gl::GetUniformLocation(shader_program, gl_str!("trans"));
+        gl::UniformMatrix4fv(trans_uniform, 1, gl::FALSE, &trans[0][0]);
     }
 
     let time_uniform = unsafe { gl::GetUniformLocation(shader_program, gl_str!("time")) };

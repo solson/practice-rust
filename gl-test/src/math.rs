@@ -93,6 +93,17 @@ macro_rules! define_vec {
 define_vec!(Vec3, 3);
 define_vec!(Vec4, 4);
 
+impl Vec3 {
+    /// Calculate the vector cross product.
+    pub fn cross(self, other: Self) -> Self {
+        Vec3([
+            self[1] * other[2] - self[2] * other[1],
+            self[2] * other[0] - self[0] * other[2],
+            self[0] * other[1] - self[1] * other[0],
+        ])
+    }
+}
+
 #[derive(Copy, Clone, Debug, PartialEq)]
 pub struct Mat4(pub [[GLfloat; 4]; 4]);
 

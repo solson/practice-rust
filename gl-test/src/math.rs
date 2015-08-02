@@ -16,18 +16,12 @@ macro_rules! define_vec {
 
             /// Calculate the square of the length (or norm) of the vector. Slightly faster than
             /// `length`.
-            pub fn length_squared(&self) -> GLfloat {
-                let mut sum = 0.0;
-
-                for i in 0..$size {
-                    sum += self[i] * self[i];
-                }
-
-                sum
+            pub fn length_squared(self) -> GLfloat {
+                self.dot(self)
             }
 
             /// Calculate the the length (or norm) of the vector.
-            pub fn length(&self) -> GLfloat {
+            pub fn length(self) -> GLfloat {
                 self.length_squared().sqrt()
             }
 
@@ -38,6 +32,17 @@ macro_rules! define_vec {
                 for i in 0..$size {
                     self[i] /= length;
                 }
+            }
+
+            /// Calculate the vector dot product.
+            pub fn dot(self, other: Self) -> GLfloat {
+                let mut result = 0.0;
+
+                for i in 0..$size {
+                    result += self[i] * other[i];
+                }
+
+                result
             }
         }
 

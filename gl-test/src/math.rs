@@ -190,14 +190,26 @@ impl Mat4 {
     /// Build a camera view matrix with the camera at `eye` looking toward `center` with `up` as
     /// the vertical direction.
     pub fn look_at(eye: Vec3, center: Vec3, up: Vec3) -> Self {
+        // Set the Z-axis to the unit vector pointing from the center toward the eye (the depth
+        // axis).
         let mut z = eye - center;
         z.normalize();
+
+        // Make the Y-axis the vertical direction.
         let mut y = up;
+
+        // Make the X-axis perpendicular to Y and Z, pointing to the right.
         let mut x = y.cross(z);
+
+        // Make the Y-axis perpendicular to Z and X.
         y = z.cross(x);
+
+        // Normalize the axes to unit vectors.
         x.normalize();
         y.normalize();
 
+        // Build the rotation/translation matrix that transforms coordinates to the new coordinate
+        // system.
         Mat4([
             [x[0], x[1], x[2], -x.dot(eye)],
             [y[0], y[1], y[2], -y.dot(eye)],

@@ -2,12 +2,12 @@ use gl::types::*;
 use std::f32::consts::PI;
 use std::ops::{Add, Index, IndexMut, Mul, Sub};
 
-pub const TAU: GLfloat = 2.0 * PI;
+pub const TAU: f32 = 2.0 * PI;
 
 macro_rules! define_vec {
     ($name:ident, $size:expr) => (
         #[derive(Copy, Clone, Debug, PartialEq)]
-        pub struct $name(pub [GLfloat; $size]);
+        pub struct $name(pub [f32; $size]);
 
         impl $name {
             pub fn zero() -> Self {
@@ -16,12 +16,12 @@ macro_rules! define_vec {
 
             /// Calculate the square of the length (or norm) of the vector. Slightly faster than
             /// `length`.
-            pub fn length_squared(self) -> GLfloat {
+            pub fn length_squared(self) -> f32 {
                 self.dot(self)
             }
 
             /// Calculate the the length (or norm) of the vector.
-            pub fn length(self) -> GLfloat {
+            pub fn length(self) -> f32 {
                 self.length_squared().sqrt()
             }
 
@@ -35,7 +35,7 @@ macro_rules! define_vec {
             }
 
             /// Calculate the vector dot product.
-            pub fn dot(self, other: Self) -> GLfloat {
+            pub fn dot(self, other: Self) -> f32 {
                 let mut result = 0.0;
 
                 for i in 0..$size {
@@ -47,15 +47,15 @@ macro_rules! define_vec {
         }
 
         impl Index<usize> for $name {
-            type Output = GLfloat;
+            type Output = f32;
 
-            fn index(&self, i: usize) -> &GLfloat {
+            fn index(&self, i: usize) -> &f32 {
                 &self.0[i]
             }
         }
 
         impl IndexMut<usize> for $name {
-            fn index_mut(&mut self, i: usize) -> &mut GLfloat {
+            fn index_mut(&mut self, i: usize) -> &mut f32 {
                 &mut self.0[i]
             }
         }
@@ -105,7 +105,7 @@ impl Vec3 {
 }
 
 #[derive(Copy, Clone, Debug, PartialEq)]
-pub struct Mat4(pub [[GLfloat; 4]; 4]);
+pub struct Mat4(pub [[f32; 4]; 4]);
 
 impl Mat4 {
     /// The zero matrix.
@@ -129,7 +129,7 @@ impl Mat4 {
     }
 
     /// Build a matrix representing a scaling by the given factors.
-    pub fn scale(x: GLfloat, y: GLfloat, z: GLfloat) -> Self {
+    pub fn scale(x: f32, y: f32, z: f32) -> Self {
         Mat4([
             [x,   0.0, 0.0, 0.0],
             [0.0, y,   0.0, 0.0],
@@ -139,7 +139,7 @@ impl Mat4 {
     }
 
     /// Build a matrix representing a translation.
-    pub fn translate(x: GLfloat, y: GLfloat, z: GLfloat) -> Self {
+    pub fn translate(x: f32, y: f32, z: f32) -> Self {
         Mat4([
             [1.0, 0.0, 0.0, x  ],
             [0.0, 1.0, 0.0, y  ],
@@ -149,7 +149,7 @@ impl Mat4 {
     }
 
     /// Build a matrix representing a rotation around the X-axis by the given angle (in radians).
-    pub fn rotate_x(angle: GLfloat) -> Self {
+    pub fn rotate_x(angle: f32) -> Self {
         let cos = angle.cos();
         let sin = angle.sin();
 
@@ -162,7 +162,7 @@ impl Mat4 {
     }
 
     /// Build a matrix representing a rotation around the Y-axis by the given angle (in radians).
-    pub fn rotate_y(angle: GLfloat) -> Self {
+    pub fn rotate_y(angle: f32) -> Self {
         let cos = angle.cos();
         let sin = angle.sin();
 
@@ -175,7 +175,7 @@ impl Mat4 {
     }
 
     /// Build a matrix representing a rotation around the Z-axis by the given angle (in radians).
-    pub fn rotate_z(angle: GLfloat) -> Self {
+    pub fn rotate_z(angle: f32) -> Self {
         let cos = angle.cos();
         let sin = angle.sin();
 
@@ -220,7 +220,7 @@ impl Mat4 {
 
     /// Build a perspective projection matrix with the given vertical field of view (in radians),
     /// aspect ratio, and Z-axis clipping distances.
-    pub fn perspective(fov_y: GLfloat, aspect: GLfloat, z_near: GLfloat, z_far: GLfloat) -> Self {
+    pub fn perspective(fov_y: f32, aspect: f32, z_near: f32, z_far: f32) -> Self {
         assert!(aspect != 0.0);
         assert!(z_near != z_far);
 
@@ -238,15 +238,15 @@ impl Mat4 {
 }
 
 impl Index<usize> for Mat4 {
-    type Output = [GLfloat; 4];
+    type Output = [f32; 4];
 
-    fn index(&self, i: usize) -> &[GLfloat; 4] {
+    fn index(&self, i: usize) -> &[f32; 4] {
         &self.0[i]
     }
 }
 
 impl IndexMut<usize> for Mat4 {
-    fn index_mut(&mut self, i: usize) -> &mut [GLfloat; 4] {
+    fn index_mut(&mut self, i: usize) -> &mut [f32; 4] {
         &mut self.0[i]
     }
 }

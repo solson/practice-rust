@@ -62,13 +62,13 @@ const FRAGMENT_SHADER_SOURCE: &'static str = "
 #[repr(C, packed)]
 struct Vertex {
     // Position.
-    x: GLfloat, y: GLfloat,
+    x: f32, y: f32,
 
     // Color.
-    r: GLfloat, g: GLfloat, b: GLfloat,
+    r: f32, g: f32, b: f32,
 
     // Texture.
-    s: GLfloat, t: GLfloat,
+    s: f32, t: f32,
 }
 
 static VERTICES: [Vertex; 4] = [
@@ -180,13 +180,13 @@ fn main() {
         gl::EnableVertexAttribArray(position_attrib as GLuint);
         gl::VertexAttribPointer(position_attrib as GLuint, 3, gl::FLOAT, gl::FALSE,
                                 mem::size_of::<Vertex>() as GLint,
-                                (2 * mem::size_of::<GLfloat>()) as *const GLvoid);
+                                (2 * mem::size_of::<f32>()) as *const GLvoid);
 
         let position_attrib = gl::GetAttribLocation(shader_program, gl_str!("texcoord"));
         gl::EnableVertexAttribArray(position_attrib as GLuint);
         gl::VertexAttribPointer(position_attrib as GLuint, 2, gl::FLOAT, gl::FALSE,
                                 mem::size_of::<Vertex>() as GLint,
-                                (5 * mem::size_of::<GLfloat>()) as *const GLvoid);
+                                (5 * mem::size_of::<f32>()) as *const GLvoid);
 
         // Create and load textures.
         gl::GenTextures(2, textures.as_mut_ptr());

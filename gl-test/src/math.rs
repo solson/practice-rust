@@ -1,4 +1,3 @@
-use gl::types::*;
 use std::f32::consts::PI;
 use std::ops::{Add, Index, IndexMut, Mul, Sub};
 

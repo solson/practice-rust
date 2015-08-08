@@ -242,14 +242,14 @@ impl Mat4 {
 impl Index<usize> for Mat4 {
     type Output = [f32; 4];
 
-    fn index(&self, i: usize) -> &[f32; 4] {
-        &self.0[i]
+    fn index(&self, col: usize) -> &[f32; 4] {
+        &self.0[col]
     }
 }
 
 impl IndexMut<usize> for Mat4 {
-    fn index_mut(&mut self, i: usize) -> &mut [f32; 4] {
-        &mut self.0[i]
+    fn index_mut(&mut self, col: usize) -> &mut [f32; 4] {
+        &mut self.0[col]
     }
 }
 

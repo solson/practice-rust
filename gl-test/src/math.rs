@@ -5,10 +5,12 @@ pub const TAU: f32 = 2.0 * PI;
 
 macro_rules! define_vec {
     ($name:ident, $size:expr) => (
+        /// A column vector.
         #[derive(Copy, Clone, Debug, PartialEq)]
         pub struct $name(pub [f32; $size]);
 
         impl $name {
+            /// Create a vector with all fields set to zero.
             pub fn zero() -> Self {
                 $name([0.0; $size])
             }
@@ -103,6 +105,7 @@ impl Vec3 {
     }
 }
 
+/// A matrix stored in column-major order.
 #[derive(Copy, Clone, Debug, PartialEq)]
 pub struct Mat4(pub [[f32; 4]; 4]);
 
@@ -140,10 +143,10 @@ impl Mat4 {
     /// Build a matrix representing a translation.
     pub fn translate(x: f32, y: f32, z: f32) -> Self {
         Mat4([
-            [1.0, 0.0, 0.0, x  ],
-            [0.0, 1.0, 0.0, y  ],
-            [0.0, 0.0, 1.0, z  ],
-            [0.0, 0.0, 0.0, 1.0],
+            [1.0, 0.0, 0.0, 0.0],
+            [0.0, 1.0, 0.0, 0.0],
+            [0.0, 0.0, 1.0, 0.0],
+            [x,   y,   z,   1.0],
         ])
     }
 
@@ -256,10 +259,10 @@ impl Mul<Mat4> for Mat4 {
     fn mul(self, other: Mat4) -> Mat4 {
         let mut result = Mat4::zero();
 
-        for i in 0..4 {
-            for j in 0..4 {
-                for k in 0..4 {
-                    result[i][j] += self[i][k] * other[k][j];
+        for col in 0..4 {
+            for row in 0..4 {
+                for i in 0..4 {
+                    result[col][row] += self[i][row] * other[col][i];
                 }
             }
         }
@@ -274,9 +277,9 @@ impl Mul<Vec4> for Mat4 {
     fn mul(self, vec: Vec4) -> Vec4 {
         let mut result = Vec4::zero();
 
-        for i in 0..4 {
-            for j in 0..4 {
-                result[i] += self[i][j] * vec[j];
+        for col in 0..4 {
+            for row in 0..4 {
+                result[row] += self[col][row] * vec[col];
             }
         }
 

@@ -26,14 +26,12 @@ const VERTEX_SHADER_SOURCE: &'static str = "
     out vec3 Color;
     out vec2 Texcoord;
 
-    uniform mat4 model;
-    uniform mat4 view;
-    uniform mat4 proj;
+    uniform mat4 trans;
 
     void main() {
         Color = color;
         Texcoord = texcoord;
-        gl_Position = proj * view * model * vec4(position, 0.0, 1.0);
+        gl_Position = trans * vec4(position, 0.0, 1.0);
     }
 ";
 
@@ -228,15 +226,7 @@ fn main() {
         math::Vec3([0.0, 0.0, 1.0]));
     let proj = math::Mat4::perspective(math::TAU / 8.0, 800.0 / 600.0, 1.0, 10.0);
 
-    let model_uniform = unsafe { gl::GetUniformLocation(shader_program, gl_str!("model")) };
-    let view_uniform = unsafe { gl::GetUniformLocation(shader_program, gl_str!("view")) };
-    let proj_uniform = unsafe { gl::GetUniformLocation(shader_program, gl_str!("proj")) };
-
-    unsafe {
-        gl::UniformMatrix4fv(view_uniform, 1, gl::FALSE, &view[0][0]);
-        gl::UniformMatrix4fv(proj_uniform, 1, gl::FALSE, &proj[0][0]);
-    }
-
+    let trans_uniform = unsafe { gl::GetUniformLocation(shader_program, gl_str!("trans")) };
     let time_uniform = unsafe { gl::GetUniformLocation(shader_program, gl_str!("time")) };
     let time_start = time::precise_time_ns();
 
@@ -257,7 +247,8 @@ fn main() {
             let model =
                 math::Mat4::rotate_z(math::TAU / 2.0 * elapsed_seconds) *
                 math::Mat4::scale(scale, scale, scale);
-            gl::UniformMatrix4fv(model_uniform, 1, gl::FALSE, &model[0][0]);
+            let trans = proj * view * model;
+            gl::UniformMatrix4fv(trans_uniform, 1, gl::FALSE, &trans[0][0]);
 
             // Clear the screen to black.
             gl::ClearColor(0.0, 0.0, 0.0, 1.0);

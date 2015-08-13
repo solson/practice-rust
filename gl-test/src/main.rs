@@ -76,22 +76,22 @@ static VERTICES: [Vertex; 4] = [
     Vertex { x: -0.5, y: -0.5, r: 1.0, g: 1.0, b: 1.0, s: 0.0, t: 1.0 }, // Bottom-left
 ];
 
-static ELEMENTS: [GLuint; 6] = [
+static ELEMENTS: [u32; 6] = [
     0, 1, 2, // Top-right triangle
     2, 3, 0, // Bottom-left triangle
 ];
 
-unsafe fn compile_shader(shader_type: GLenum, source: &str) -> Result<GLuint, String> {
+unsafe fn compile_shader(shader_type: GLenum, source: &str) -> Result<u32, String> {
     let shader = gl::CreateShader(shader_type);
     let source_ptr = source.as_bytes().as_ptr() as *const GLchar;
-    let source_len = source.len() as GLint;
+    let source_len = source.len() as i32;
     gl::ShaderSource(shader, 1, &source_ptr, &source_len);
     gl::CompileShader(shader);
 
-    let mut status = gl::FALSE as GLint;
+    let mut status = gl::FALSE as i32;
     gl::GetShaderiv(shader, gl::COMPILE_STATUS, &mut status);
 
-    if status == gl::TRUE as GLint {
+    if status == gl::TRUE as i32 {
         Ok(shader)
     } else {
         let mut log_len = 0;
@@ -144,16 +144,16 @@ fn main() {
         gl::GenBuffers(1, &mut vbo);
         gl::BindBuffer(gl::ARRAY_BUFFER, vbo);
         gl::BufferData(gl::ARRAY_BUFFER,
-                       mem::size_of_val(&VERTICES) as GLsizeiptr,
-                       VERTICES.as_ptr() as *const GLvoid,
+                       mem::size_of_val(&VERTICES) as usize,
+                       VERTICES.as_ptr() as *const (),
                        gl::STATIC_DRAW);
 
         // Create an element buffer object and copy the element data to it.
         gl::GenBuffers(1, &mut ebo);
         gl::BindBuffer(gl::ELEMENT_ARRAY_BUFFER, ebo);
         gl::BufferData(gl::ELEMENT_ARRAY_BUFFER,
-                       mem::size_of_val(&ELEMENTS) as GLsizeiptr,
-                       ELEMENTS.as_ptr() as *const GLvoid,
+                       mem::size_of_val(&ELEMENTS) as usize,
+                       ELEMENTS.as_ptr() as *const (),
                        gl::STATIC_DRAW);
 
         // Compile the vertex and fragment shaders.
@@ -170,21 +170,21 @@ fn main() {
 
         // Specify the layout of the vertex data.
         let position_attrib = gl::GetAttribLocation(shader_program, gl_str!("position"));
-        gl::EnableVertexAttribArray(position_attrib as GLuint);
-        gl::VertexAttribPointer(position_attrib as GLuint, 2, gl::FLOAT, gl::FALSE,
-                                mem::size_of::<Vertex>() as GLint, ptr::null());
+        gl::EnableVertexAttribArray(position_attrib as u32);
+        gl::VertexAttribPointer(position_attrib as u32, 2, gl::FLOAT, gl::FALSE,
+                                mem::size_of::<Vertex>() as i32, ptr::null());
 
         let position_attrib = gl::GetAttribLocation(shader_program, gl_str!("color"));
-        gl::EnableVertexAttribArray(position_attrib as GLuint);
-        gl::VertexAttribPointer(position_attrib as GLuint, 3, gl::FLOAT, gl::FALSE,
-                                mem::size_of::<Vertex>() as GLint,
-                                (2 * mem::size_of::<f32>()) as *const GLvoid);
+        gl::EnableVertexAttribArray(position_attrib as u32);
+        gl::VertexAttribPointer(position_attrib as u32, 3, gl::FLOAT, gl::FALSE,
+                                mem::size_of::<Vertex>() as i32,
+                                (2 * mem::size_of::<f32>()) as *const ());
 
         let position_attrib = gl::GetAttribLocation(shader_program, gl_str!("texcoord"));
-        gl::EnableVertexAttribArray(position_attrib as GLuint);
-        gl::VertexAttribPointer(position_attrib as GLuint, 2, gl::FLOAT, gl::FALSE,
-                                mem::size_of::<Vertex>() as GLint,
-                                (5 * mem::size_of::<f32>()) as *const GLvoid);
+        gl::EnableVertexAttribArray(position_attrib as u32);
+        gl::VertexAttribPointer(position_attrib as u32, 2, gl::FLOAT, gl::FALSE,
+                                mem::size_of::<Vertex>() as i32,
+                                (5 * mem::size_of::<f32>()) as *const ());
 
         // Create and load textures.
         gl::GenTextures(2, textures.as_mut_ptr());
@@ -192,32 +192,28 @@ fn main() {
         gl::ActiveTexture(gl::TEXTURE0);
         gl::BindTexture(gl::TEXTURE_2D, textures[0]);
         let image = imagefmt::read("sample.png", imagefmt::ColFmt::RGB).unwrap();
-        gl::TexImage2D(gl::TEXTURE_2D, 0, gl::RGB as GLint, image.w as GLint, image.h as GLint,
-                       0, gl::RGB, gl::UNSIGNED_BYTE, image.buf.as_ptr() as *const GLvoid);
+        gl::TexImage2D(gl::TEXTURE_2D, 0, gl::RGB as i32, image.w as i32, image.h as i32,
+                       0, gl::RGB, gl::UNSIGNED_BYTE, image.buf.as_ptr() as *const ());
         gl::Uniform1i(gl::GetUniformLocation(shader_program, gl_str!("tex_kitten")), 0);
 
         gl::GenerateMipmap(gl::TEXTURE_2D);
-        gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_WRAP_S, gl::REPEAT as GLint);
-        gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_WRAP_T, gl::REPEAT as GLint);
-        gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MIN_FILTER,
-                          gl::LINEAR_MIPMAP_LINEAR as GLint);
-        gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MAG_FILTER,
-                          gl::LINEAR_MIPMAP_LINEAR as GLint);
+        gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_WRAP_S, gl::REPEAT as i32);
+        gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_WRAP_T, gl::REPEAT as i32);
+        gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MIN_FILTER, gl::LINEAR_MIPMAP_LINEAR as i32);
+        gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MAG_FILTER, gl::LINEAR_MIPMAP_LINEAR as i32);
 
         gl::ActiveTexture(gl::TEXTURE1);
         gl::BindTexture(gl::TEXTURE_2D, textures[1]);
         let image = imagefmt::read("sample2.png", imagefmt::ColFmt::RGB).unwrap();
-        gl::TexImage2D(gl::TEXTURE_2D, 0, gl::RGB as GLint, image.w as GLint, image.h as GLint,
-                       0, gl::RGB, gl::UNSIGNED_BYTE, image.buf.as_ptr() as *const GLvoid);
+        gl::TexImage2D(gl::TEXTURE_2D, 0, gl::RGB as i32, image.w as i32, image.h as i32,
+                       0, gl::RGB, gl::UNSIGNED_BYTE, image.buf.as_ptr() as *const ());
         gl::Uniform1i(gl::GetUniformLocation(shader_program, gl_str!("tex_puppy")), 1);
 
         gl::GenerateMipmap(gl::TEXTURE_2D);
-        gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_WRAP_S, gl::REPEAT as GLint);
-        gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_WRAP_T, gl::REPEAT as GLint);
-        gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MIN_FILTER,
-                          gl::LINEAR_MIPMAP_LINEAR as GLint);
-        gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MAG_FILTER,
-                          gl::LINEAR_MIPMAP_LINEAR as GLint);
+        gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_WRAP_S, gl::REPEAT as i32);
+        gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_WRAP_T, gl::REPEAT as i32);
+        gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MIN_FILTER, gl::LINEAR_MIPMAP_LINEAR as i32);
+        gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MAG_FILTER, gl::LINEAR_MIPMAP_LINEAR as i32);
     }
 
     let view = math::Mat4::look_at(
@@ -255,7 +251,7 @@ fn main() {
             gl::Clear(gl::COLOR_BUFFER_BIT);
 
             // Draw the triangles described by the elements array.
-            gl::DrawElements(gl::TRIANGLES, ELEMENTS.len() as GLint, gl::UNSIGNED_INT,
+            gl::DrawElements(gl::TRIANGLES, ELEMENTS.len() as i32, gl::UNSIGNED_INT,
                              ptr::null());
         }
 
